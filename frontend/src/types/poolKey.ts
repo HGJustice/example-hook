@@ -3,5 +3,5 @@ export interface PoolKey {
   currency1: string;
   fee: number;
   tickSpacing: number;
-  hooks: string;
+  hookAddress: string;
 }

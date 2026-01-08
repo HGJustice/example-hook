@@ -1,9 +1,10 @@
 import { useState } from "react";
+import InitPool from "./components/InitPool/InitPool";
 
 function App() {
   return (
     <>
-      <h1> hi</h1>
+      <InitPool />
     </>
   );
 }
