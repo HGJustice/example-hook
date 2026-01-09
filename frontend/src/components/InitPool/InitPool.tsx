@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { InitPoolFormData } from "../../types/initPoolFormData";
+import type { InitPoolFormData } from "../../types/Forms/initPoolFormData";
 import type { PoolKey } from "../../types/poolKey";
 import { baseWalletClient } from "../../constants/clients";
 import {
@@ -31,10 +31,10 @@ function InitPool() {
         currency1: initPoolFormData.currency1Address,
         fee: initPoolFormData.fee,
         tickSpacing: 60,
-        hookAddress: hookAddress,
+        hooks: hookAddress,
       };
 
-      const [userAddress] = await baseWalletClient.getAddresses();
+      const [userAddress] = await baseWalletClient.requestAddresses();
 
       const hash = await baseWalletClient.writeContract({
         address: poolManagerAddress,
@@ -66,7 +66,7 @@ function InitPool() {
           <label>Pool Fee Rate</label>
           <input
             type="number"
-            name="feeRate"
+            name="fee"
             placeholder="Pool Fee Rate"
             value={initPoolFormData.fee}
             onChange={handleInputChange}

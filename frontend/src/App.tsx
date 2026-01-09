@@ -1,10 +1,10 @@
-import { useState } from "react";
 import InitPool from "./components/InitPool/InitPool";
+import ModifyLiquidity from "./components/ModifyLiquidity/ModifyLiquidity";
 
 function App() {
   return (
     <>
-      <InitPool />
+      <ModifyLiquidity />
     </>
   );
 }
