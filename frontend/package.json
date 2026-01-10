@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@uniswap/v4-sdk": "^1.25.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "viem": "^2.43.4"

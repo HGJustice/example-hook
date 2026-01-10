@@ -26,8 +26,8 @@ function ModifyLiquidity() {
     });
   }
 
-  async function submitModifyLiquidityRequest(e: any) {
-    e.preventDefault();
+  async function submitModifyLiquidityRequest(event: React.FormEvent) {
+    event.preventDefault();
 
     try {
       const poolKey: PoolKey = {
@@ -66,10 +66,10 @@ function ModifyLiquidity() {
       });
 
       console.log("Transaction successful, the hash is:", modifyLiquidityHash);
-    } catch (e) {
+    } catch (error) {
       console.error(
         "Error happending in the submitModifyLiquidityRequest function:",
-        e
+        error
       );
     }
   }

@@ -22,8 +22,8 @@ function InitPool() {
     });
   }
 
-  async function submitInitPoolRequest(e: any) {
-    e.preventDefault();
+  async function submitInitPoolRequest(event: React.FormEvent) {
+    event.preventDefault();
 
     try {
       const poolKey: PoolKey = {
@@ -45,8 +45,8 @@ function InitPool() {
       });
 
       console.log("Transaction successful, the hash is:", hash);
-    } catch (e) {
-      console.error("The error in submitInitPoolRequest function is", e);
+    } catch (error) {
+      console.error("The error in submitInitPoolRequest function is", error);
     }
   }
 
