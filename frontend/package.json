@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@uniswap/universal-router-sdk": "^4.29.3",
     "@uniswap/v4-sdk": "^1.25.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
