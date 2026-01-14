@@ -5,7 +5,7 @@ import Swap from "./components/Swap/Swap";
 function App() {
   return (
     <>
-      <Swap />
+      <InitPool />
     </>
   );
 }

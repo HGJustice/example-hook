@@ -1,18 +1,20 @@
 import { useState } from "react";
 import type { InitPoolFormData } from "../../types/Forms/initPoolFormData";
-import type { PoolKey } from "../../types/poolKey";
-import { baseWalletClient } from "../../constants/clients";
+import type { PoolConfig } from "../../types/poolConfig";
+import { baseWalletClient, client } from "../../constants/clients";
 import {
   poolManagerAddress,
   hookAddress,
+  tokenAddress,
+  stateViewAddress,
 } from "../../constants/contractAddresses";
 import PoolManagerABI from "../../ABI/poolManager.json";
 
 function InitPool() {
   const [initPoolFormData, setinitPoolFormData] = useState<InitPoolFormData>({
-    currency1Address: "",
-    fee: 0,
-    sqrtPriceX96: 0,
+    currency1Address: tokenAddress,
+    fee: 3000,
+    tickSpacing: 60,
   });
 
   function handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -25,28 +27,35 @@ function InitPool() {
   async function submitInitPoolRequest(event: React.FormEvent) {
     event.preventDefault();
 
+    // Build the poolKey as per Uniswap docs
+    const poolKey = {
+      currency0: "0x0000000000000000000000000000000000000000" as `0x${string}`,
+      currency1: initPoolFormData.currency1Address as `0x${string}`,
+      fee: Number(initPoolFormData.fee),
+      tickSpacing: Number(initPoolFormData.tickSpacing),
+      hooks: hookAddress as `0x${string}`,
+    };
+
+    // Convert sqrtPriceX96 to BigInt (viem requires this for large numbers)
+    const sqrtPriceX96 = BigInt("79228162514264337593543950336");
+    const [userAddress] = await baseWalletClient.requestAddresses();
+
     try {
-      const poolKey: PoolKey = {
-        currency0: "0x0000000000000000000000000000000000000000",
-        currency1: initPoolFormData.currency1Address,
-        fee: initPoolFormData.fee,
-        tickSpacing: 60,
-        hooks: hookAddress,
-      };
-
-      const [userAddress] = await baseWalletClient.requestAddresses();
-
       const hash = await baseWalletClient.writeContract({
-        address: poolManagerAddress,
+        address: poolManagerAddress as `0x${string}`,
         abi: PoolManagerABI,
         functionName: "initialize",
-        args: [poolKey, initPoolFormData.sqrtPriceX96],
+        args: [poolKey, sqrtPriceX96],
         account: userAddress,
       });
 
-      console.log("Transaction successful, the hash is:", hash);
+      console.log("Pool initialized! Transaction hash:", hash);
+
+      // Wait for confirmation
+      const receipt = await client.waitForTransactionReceipt({ hash });
+      console.log("Transaction confirmed:", receipt);
     } catch (error) {
-      console.error("The error in submitInitPoolRequest function is", error);
+      console.error("Error initializing pool:", error);
     }
   }
 
@@ -71,12 +80,12 @@ function InitPool() {
             value={initPoolFormData.fee}
             onChange={handleInputChange}
           />
-          <label>SqrtPriceX96</label>
+          <label>Tick Spacing</label>
           <input
             type="number"
-            name="sqrtPriceX96"
-            placeholder="Price of the pool"
-            value={initPoolFormData.sqrtPriceX96}
+            name="tickSpacing"
+            placeholder="Tick Spacing"
+            value={initPoolFormData.tickSpacing}
             onChange={handleInputChange}
           />
         </div>
