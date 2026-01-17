@@ -1,21 +1,17 @@
 import { useState } from "react";
-import type { InitPoolFormData } from "../../types/Forms/initPoolFormData";
-import type { PoolConfig } from "../../types/poolConfig";
-import { baseWalletClient, client } from "../../constants/clients";
-import {
-  poolManagerAddress,
-  hookAddress,
-  tokenAddress,
-  stateViewAddress,
-} from "../../constants/contractAddresses";
-import PoolManagerABI from "../../ABI/poolManager.json";
+import type { InitPoolFormData } from "../../types/forms/initPoolFormData";
+import { initializePool, getPoolState } from "../../lib/poolFunctions";
 
 function InitPool() {
   const [initPoolFormData, setinitPoolFormData] = useState<InitPoolFormData>({
-    currency1Address: tokenAddress,
+    currency1Address: "0xCC04941338f101EF09623E3BE0e1d5545e3cab8a",
     fee: 3000,
     tickSpacing: 60,
+    hooks: "0x238a9DdAbcf2AE2449979F196107d3AeAE31C040",
   });
+  const [initPoolTxHash, setinitPoolTxHash] = useState<string | null>(null);
+  const [currentTick, setCurrentTick] = useState<number | null>(null);
+  const [currentSqrtPrice, setSqrtPrice] = useState<bigint | null>(null);
 
   function handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
     setinitPoolFormData({
@@ -24,45 +20,43 @@ function InitPool() {
     });
   }
 
-  async function submitInitPoolRequest(event: React.FormEvent) {
+  function resetState() {
+    setinitPoolTxHash(null);
+    setCurrentTick(null);
+    setSqrtPrice(null);
+  }
+
+  async function submitInitializePool(event: React.FormEvent) {
     event.preventDefault();
 
-    // Build the poolKey as per Uniswap docs
-    const poolKey = {
-      currency0: "0x0000000000000000000000000000000000000000" as `0x${string}`,
-      currency1: initPoolFormData.currency1Address as `0x${string}`,
-      fee: Number(initPoolFormData.fee),
-      tickSpacing: Number(initPoolFormData.tickSpacing),
-      hooks: hookAddress as `0x${string}`,
-    };
-
-    // Convert sqrtPriceX96 to BigInt (viem requires this for large numbers)
-    const sqrtPriceX96 = BigInt("79228162514264337593543950336");
-    const [userAddress] = await baseWalletClient.requestAddresses();
-
     try {
-      const hash = await baseWalletClient.writeContract({
-        address: poolManagerAddress as `0x${string}`,
-        abi: PoolManagerABI,
-        functionName: "initialize",
-        args: [poolKey, sqrtPriceX96],
-        account: userAddress,
-      });
-
-      console.log("Pool initialized! Transaction hash:", hash);
-
-      // Wait for confirmation
-      const receipt = await client.waitForTransactionReceipt({ hash });
-      console.log("Transaction confirmed:", receipt);
+      const transactionHash = await initializePool(
+        initPoolFormData.currency1Address,
+        initPoolFormData.fee,
+        initPoolFormData.tickSpacing,
+        initPoolFormData.hooks
+      );
+      setinitPoolTxHash(transactionHash);
     } catch (error) {
-      console.error("Error initializing pool:", error);
+      console.error("Error in the submitInitializePool function", error);
+    }
+  }
+
+  async function fetchPoolState(event: React.FormEvent) {
+    event.preventDefault();
+    try {
+      const [sqrtPrice, currentTick] = await getPoolState();
+      setCurrentTick(currentTick);
+      setSqrtPrice(sqrtPrice);
+    } catch (error) {
+      console.error("Error in the fetchPoolState function", error);
     }
   }
 
   return (
     <>
       <h1>Initialize Liquidity Pool</h1>
-      <form onSubmit={submitInitPoolRequest}>
+      <form onSubmit={submitInitializePool}>
         <div>
           <label>Currency 1 address</label>
           <input
@@ -88,9 +82,36 @@ function InitPool() {
             value={initPoolFormData.tickSpacing}
             onChange={handleInputChange}
           />
+          <label>Hook Address</label>
+          <input
+            type="text"
+            name="hooks"
+            placeholder="Hook Address"
+            value={initPoolFormData.hooks}
+            onChange={handleInputChange}
+          />
         </div>
         <button type="submit">Create Liquidity Pool</button>
+        <button type="button" onClick={fetchPoolState}>
+          Check Pool Data
+        </button>
+        <button type="button" onClick={resetState}>
+          Reset Search
+        </button>
       </form>
+      {initPoolTxHash && (
+        <a href={`https://sepolia.basescan.org/tx/${initPoolTxHash}`}>
+          https://sepolia.basescan.org/tx/{initPoolTxHash}
+        </a>
+      )}
+      {currentTick && (
+        <p>The current tick from initialized pool is {currentTick}</p>
+      )}
+      {currentSqrtPrice && (
+        <p>
+          The square root price of the initialized pool is {currentSqrtPrice}
+        </p>
+      )}
     </>
   );
 }

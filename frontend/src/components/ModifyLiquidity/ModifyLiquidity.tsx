@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { PoolKey } from "../../types/poolKey";
 import type { ModifyLiquidityParams } from "../../types/modifyLiquidityParams";
-import type { ModifyLiquidityFormData } from "../../types/Forms/modifyLiquidityFormData";
+import type { ModifyLiquidityFormData } from "../../types/forms/modifyLiquidityFormData";
 import { baseWalletClient } from "../../constants/clients";
 import {
   poolManagerAddress,
