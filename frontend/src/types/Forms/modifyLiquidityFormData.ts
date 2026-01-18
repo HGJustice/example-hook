@@ -1,5 +1,4 @@
 export type ModifyLiquidityFormData = {
-  tickLower: number;
-  tickUpper: number;
-  liquidityDelta: string;
+  amount0: number;
+  amount1: number;
 };

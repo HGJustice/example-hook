@@ -1,9 +1,10 @@
 import { useState } from "react";
 import type { InitPoolFormData } from "../../types/forms/initPoolFormData";
 import { initializePool, getPoolState } from "../../lib/poolFunctions";
+import { userFormInput } from "../../hooks/userFormInput";
 
 function InitPool() {
-  const [initPoolFormData, setinitPoolFormData] = useState<InitPoolFormData>({
+  const { formData, handleInputChange } = userFormInput<InitPoolFormData>({
     currency1Address: "0xCC04941338f101EF09623E3BE0e1d5545e3cab8a",
     fee: 3000,
     tickSpacing: 60,
@@ -12,13 +13,6 @@ function InitPool() {
   const [initPoolTxHash, setinitPoolTxHash] = useState<string | null>(null);
   const [currentTick, setCurrentTick] = useState<number | null>(null);
   const [currentSqrtPrice, setSqrtPrice] = useState<bigint | null>(null);
-
-  function handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
-    setinitPoolFormData({
-      ...initPoolFormData,
-      [event.target.name]: event.target.value,
-    });
-  }
 
   function resetState() {
     setinitPoolTxHash(null);
@@ -31,10 +25,10 @@ function InitPool() {
 
     try {
       const transactionHash = await initializePool(
-        initPoolFormData.currency1Address,
-        initPoolFormData.fee,
-        initPoolFormData.tickSpacing,
-        initPoolFormData.hooks
+        formData.currency1Address,
+        formData.fee,
+        formData.tickSpacing,
+        formData.hooks
       );
       setinitPoolTxHash(transactionHash);
     } catch (error) {
@@ -63,7 +57,7 @@ function InitPool() {
             type="text"
             name="currency1Address"
             placeholder="Currency 1 base address"
-            value={initPoolFormData.currency1Address}
+            value={formData.currency1Address}
             onChange={handleInputChange}
           />
           <label>Pool Fee Rate</label>
@@ -71,7 +65,7 @@ function InitPool() {
             type="number"
             name="fee"
             placeholder="Pool Fee Rate"
-            value={initPoolFormData.fee}
+            value={formData.fee}
             onChange={handleInputChange}
           />
           <label>Tick Spacing</label>
@@ -79,7 +73,7 @@ function InitPool() {
             type="number"
             name="tickSpacing"
             placeholder="Tick Spacing"
-            value={initPoolFormData.tickSpacing}
+            value={formData.tickSpacing}
             onChange={handleInputChange}
           />
           <label>Hook Address</label>
@@ -87,7 +81,7 @@ function InitPool() {
             type="text"
             name="hooks"
             placeholder="Hook Address"
-            value={initPoolFormData.hooks}
+            value={formData.hooks}
             onChange={handleInputChange}
           />
         </div>

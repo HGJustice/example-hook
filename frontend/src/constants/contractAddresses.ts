@@ -6,3 +6,5 @@ export const universalRouterAddress =
 export const permit2Address = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
 export const stateViewAddress = "0x571291b572ed32ce6751a2cb2486ebee8defb9b4";
 export const ethAddress = "0x0000000000000000000000000000000000000000";
+export const positionManagerAddress =
+  "0x4b2c77d209d3405f41a037ec6c77f7f5b8e2ca80";
