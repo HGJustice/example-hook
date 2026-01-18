@@ -5,8 +5,8 @@ import { userFormInput } from "../../hooks/userFormInput";
 function ModifyLiquidity() {
   const { formData, handleInputChange, resetForm } =
     userFormInput<ModifyLiquidityFormData>({
-      amount0: 0,
-      amount1: 0,
+      amount0: 1,
+      amount1: 10000,
     });
 
   async function submitModifyLiquidityRequest(event: React.FormEvent) {
@@ -15,13 +15,13 @@ function ModifyLiquidity() {
     try {
       const txHash = await createMintPosition(
         formData.amount0,
-        formData.amount1
+        formData.amount1,
       );
       console.log(txHash);
     } catch (error) {
       console.error(
         "Error happending in the submitModifyLiquidityRequest function:",
-        error
+        error,
       );
     }
   }

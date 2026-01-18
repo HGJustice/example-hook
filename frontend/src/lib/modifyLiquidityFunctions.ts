@@ -16,7 +16,7 @@ export async function createMintPosition(
   amountB: number,
   tickRange: number = 1000,
   fullRange: boolean = false,
-  slippageTolerance: number = 0.05
+  slippageTolerance: number = 0.05,
 ): Promise<string> {
   const ETH_NATIVE = Ether.onChain(ChainId.BASE_SEPOLIA);
   const EXAMPLE_TOKEN = new Token(84532, tokenAddress, 18, "EXA", "Example");
@@ -25,6 +25,11 @@ export async function createMintPosition(
 
   try {
     const [sqrtPrice, currentTick, liquidity] = await getPoolState();
+    console.log("Pool State:", {
+      sqrtPrice: sqrtPrice.toString(),
+      currentTick,
+      liquidity: liquidity.toString(),
+    });
     const pool = new Pool(
       ETH_NATIVE,
       EXAMPLE_TOKEN,
@@ -33,7 +38,7 @@ export async function createMintPosition(
       hookAddress,
       sqrtPrice.toString(),
       liquidity.toString(),
-      currentTick
+      currentTick,
     );
 
     let tickLower: number;
@@ -53,15 +58,26 @@ export async function createMintPosition(
       tickUpper = nearestUsableTick(currentTick + tickRange, tickSpacing);
     }
 
+    console.log("Tick Info:", {
+      currentTick,
+      tickLower,
+      tickUpper,
+      tickSpacing,
+    });
+
     const token0IsETH = ETH_NATIVE.wrapped.sortsBefore(EXAMPLE_TOKEN);
 
     const amount0Desired = token0IsETH
-      ? Math.floor(amountA * 10 ** ETH_NATIVE.decimals)
-      : Math.floor(amountB * 10 ** EXAMPLE_TOKEN.decimals);
+      ? BigInt(Math.floor(amountA * 1e18)).toString()
+      : (
+          BigInt(Math.floor(amountB)) * BigInt(10 ** EXAMPLE_TOKEN.decimals)
+        ).toString();
 
     const amount1Desired = token0IsETH
-      ? Math.floor(amountB * 10 ** EXAMPLE_TOKEN.decimals)
-      : Math.floor(amountA * 10 ** ETH_NATIVE.decimals);
+      ? (
+          BigInt(Math.floor(amountB)) * BigInt(10 ** EXAMPLE_TOKEN.decimals)
+        ).toString()
+      : BigInt(Math.floor(amountA * 1e18)).toString();
 
     const position = Position.fromAmounts({
       pool,
@@ -74,11 +90,11 @@ export async function createMintPosition(
 
     const slippagePct = new Percent(
       Math.floor(slippageTolerance * 100),
-      10_000
+      10_000,
     );
 
     const [userAddress] = await baseWalletClient.requestAddresses();
-    const deadlineSeconds = 20 * 60; // 20 minutes
+    const deadlineSeconds = 20 * 60;
     const currentBlock = await client.getBlock();
     const currentBlockTimestamp = Number(currentBlock.timestamp);
     const deadline = currentBlockTimestamp + deadlineSeconds;
@@ -93,7 +109,7 @@ export async function createMintPosition(
 
     const { calldata, value } = V4PositionManager.addCallParameters(
       position,
-      mintOptions
+      mintOptions,
     );
 
     const txHash = await baseWalletClient.writeContract({
