@@ -7,9 +7,12 @@ import {
   tokenAddress,
   hookAddress,
   positionManagerAddress,
+  permit2Address,
 } from "../constants/contractAddresses";
 import { client, baseWalletClient } from "../constants/clients";
+import { PERMIT2_TYPES } from "../types/permit2";
 import PositionManagerABI from "../ABI/positionManager.json";
+import Premit2ABI from "../ABI/premit2.json";
 
 export async function createMintPosition(
   amountA: number,
@@ -99,12 +102,53 @@ export async function createMintPosition(
     const currentBlockTimestamp = Number(currentBlock.timestamp);
     const deadline = currentBlockTimestamp + deadlineSeconds;
 
+    const permitDetails = [];
+
+    const [, , nonce] = (await client.readContract({
+      address: permit2Address,
+      abi: Premit2ABI,
+      functionName: "allowance",
+      args: [userAddress, tokenAddress, positionManagerAddress],
+    })) as [bigint, number, number];
+
+    const permitExpiration = currentBlockTimestamp + 1800;
+
+    permitDetails.push({
+      token: tokenAddress,
+      amount: (2n ** 160n - 1n).toString(),
+      expiration: permitExpiration.toString(),
+      nonce: nonce.toString(),
+    });
+
+    const permitBatch = {
+      details: permitDetails,
+      spender: positionManagerAddress,
+      sigDeadline: deadline.toString(),
+    };
+
+    const signature = await baseWalletClient.signTypedData({
+      account: userAddress,
+      domain: {
+        name: "Permit2",
+        chainId: ChainId.BASE_SEPOLIA,
+        verifyingContract: permit2Address,
+      },
+      types: PERMIT2_TYPES,
+      primaryType: "PermitBatch",
+      message: permitBatch,
+    });
+
     const mintOptions: MintOptions = {
       recipient: userAddress,
       slippageTolerance: slippagePct,
       deadline: deadline.toString(),
       useNative: ETH_NATIVE,
       hookData: "0x",
+      batchPermit: {
+        owner: userAddress,
+        permitBatch: permitBatch,
+        signature: signature,
+      },
     };
 
     const { calldata, value } = V4PositionManager.addCallParameters(
