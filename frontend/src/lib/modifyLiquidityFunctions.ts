@@ -61,13 +61,6 @@ export async function createMintPosition(
       tickUpper = nearestUsableTick(currentTick + tickRange, tickSpacing);
     }
 
-    console.log("Tick Info:", {
-      currentTick,
-      tickLower,
-      tickUpper,
-      tickSpacing,
-    });
-
     const token0IsETH = ETH_NATIVE.wrapped.sortsBefore(EXAMPLE_TOKEN);
 
     const amount0Desired = token0IsETH

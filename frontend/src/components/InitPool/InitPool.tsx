@@ -8,7 +8,7 @@ function InitPool() {
     currency1Address: "0xCC04941338f101EF09623E3BE0e1d5545e3cab8a",
     fee: 3000,
     tickSpacing: 60,
-    hooks: "0x238a9DdAbcf2AE2449979F196107d3AeAE31C040",
+    hooks: "0x71A2219F6869B69C33E2AF6b29C1619C139F8040",
   });
   const [initPoolTxHash, setinitPoolTxHash] = useState<string | null>(null);
   const [currentTick, setCurrentTick] = useState<number | null>(null);
@@ -28,7 +28,7 @@ function InitPool() {
         formData.currency1Address,
         formData.fee,
         formData.tickSpacing,
-        formData.hooks
+        formData.hooks,
       );
       setinitPoolTxHash(transactionHash);
     } catch (error) {
